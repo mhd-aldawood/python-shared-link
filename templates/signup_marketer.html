@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+
+{% if error %}
+{{ error }}
+
+<br/>
+<br/>
+{% endif %}
+{% block javascript %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+$('.js-example-basic-multiple').select2();
+});
+
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+ function myFunction(e) {
+
+const arraytemp=$(".js-example-basic-multiple").select2('data');
+const array=[]
+for(const item of arraytemp){
+array.push(item.text);
+console.log(item.text);
+}
+
+    const csrftoken = getCookie('csrftoken');
+
+var gender=document.getElementById('idForm').elements['gender'].value;
+var minimumToReceive=document.getElementById('idForm').elements['minimum_to_receive'].value;
+var percentageInMarketing=document.getElementById('idForm').elements['percentage_in_marketing'].value;
+var username=document.getElementById('idForm').elements['username'].value;
+fetch("{% url 'marketerUuid' %}", {
+  method: "POST",
+  headers: {'Content-Type': 'application/json',"X-CSRFToken": csrftoken },
+  body: JSON.stringify({'username':username
+  ,'gender':gender
+  ,'percentage_in_marketing':percentageInMarketing
+  ,'minimum_to_receive':minimumToReceive
+  ,'username':username
+  ,'products':array
+  })
+}).then((response) => response.json())
+  .then((data) => {
+  console.log(data)
+  document.getElementById('marketerId').innerHTML ='http://127.0.0.1:8000/shared-url/'+data['marketer'];
+  });
+}
+
+
+
+
+</script>
+
+{% endblock%}
+
+
+<h1 id="test">Signup Marketer</h1>
+
+
+<form id='idForm' method='POST' >
+    {% csrf_token %}
+    username:
+    <br/>
+    <input type="text" name="username"/>
+    <br/>
+    gender:
+    <br/>
+    <input type="radio" name="gender" value="male"> Male
+    <input type="radio" name="gender" value="female"> Female
+    <br/>
+    percentage in marketing:
+    <br/>
+    <input type="text" name="percentage_in_marketing"/>
+    <br/>
+    minimum to receive
+    <br/>
+    <input type="text" name="minimum_to_receive"/>
+    <br/>
+    <input id="btn" onclick="myFunction()" value="submit" class="btn btn-primary" >
+    <br/>
+    Products:
+<select class="js-example-basic-multiple" name="states[]" multiple="multiple">
+      {% for product in productList %}
+        <option value="AL">{{product.name}}</option>
+      {% endfor %}
+
+</select>
+
+</form>
+
+
+<h1 id="marketerId"></h1>
+<!--            <li>{{ marketer.username }}</li>-->
+<!--            <li>http://127.0.0.1:8000/{{ marketer.uu_id }}</li>-->
+
+{% endblock %}
